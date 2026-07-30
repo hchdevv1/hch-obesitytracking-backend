@@ -23,6 +23,7 @@ export class ObesityRegister {
   @PrimaryGeneratedColumn({
     type: 'bigint',
     name: 'register_id',
+    primaryKeyConstraintName: 'pk_obesity_register',
   })
   registerId!: string;
 
