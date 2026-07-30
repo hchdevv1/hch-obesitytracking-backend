@@ -6,6 +6,7 @@ import configuration from './config/configuration';
 import { LoggerModule } from './logger/logger.module';
 import { HealthModule } from './modules/health/health.module';
 import { ObesityRegisterModule } from './modules/obesity-register/obesity-register.module';
+import { ObesityWeightTransactionModule } from './modules/obesity-weight-transaction/obesity-weight-transaction.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -52,6 +53,7 @@ import { ObesityRegisterModule } from './modules/obesity-register/obesity-regist
     LoggerModule,
     HealthModule,
     ObesityRegisterModule,
+    ObesityWeightTransactionModule,
   ],
 })
 export class AppModule {}
