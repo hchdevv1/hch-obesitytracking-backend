@@ -5,8 +5,9 @@ import {
   Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  OneToMany
 } from 'typeorm';
-
+import { ObesityWeightTransaction } from '../../obesity-weight-transaction/entities/obesity-weight-transaction.entity';
 @Entity({
   name: 'obesity_register',
 })
@@ -124,4 +125,9 @@ export class ObesityRegister {
     type: 'timestamptz',
   })
   updatedAt!: Date;
+  @OneToMany(
+  () => ObesityWeightTransaction,
+  (weightTransaction) => weightTransaction.register,
+)
+weightTransactions!: ObesityWeightTransaction[];
 }

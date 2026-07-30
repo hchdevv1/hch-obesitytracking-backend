@@ -10,13 +10,11 @@ import {
 
 import { ObesityRegister } from '../../obesity-register/entities/obesity-register.entity';
 
+
 @Entity({
   name: 'obesity_weight_transaction',
 })
-@Index(
-  'idx_obesity_weight_transaction_register_id',
-  ['registerId'],
-)
+
 @Index(
   'idx_obesity_weight_transaction_patient_id',
   ['patientId'],
@@ -24,6 +22,10 @@ import { ObesityRegister } from '../../obesity-register/entities/obesity-registe
 @Index(
   'idx_obesity_weight_transaction_weight_at',
   ['weightAt'],
+)
+@Index(
+  'idx_obesity_weight_transaction_register_weight_at',
+  ['registerId', 'weightAt'],
 )
 export class ObesityWeightTransaction {
   @PrimaryGeneratedColumn({
@@ -117,4 +119,7 @@ export class ObesityWeightTransaction {
     type: 'timestamptz',
   })
   createdAt?: Date;
+
+
+
 }
