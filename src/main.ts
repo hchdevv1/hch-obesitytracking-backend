@@ -7,7 +7,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AppModule } from './app.module';
 import { setupSwagger } from './config/swagger.config';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
-
+import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
 
@@ -29,10 +29,13 @@ async function bootstrap(): Promise<void> {
     }),
   );
   app.useGlobalInterceptors( new ResponseInterceptor(reflector),);
+  app.useGlobalFilters(new GlobalExceptionFilter());
   setupSwagger(app, configService);
 
   const port = configService.get<number>('app.port', 3000);
-
+  app.enableCors({
+  origin: '*',
+});
   await app.listen(port);
 }
 

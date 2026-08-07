@@ -38,8 +38,9 @@ export class ObesityRegister {
     name: 'obesity_number',
     type: 'varchar',
     length: 30,
+    nullable: true,
   })
-  obesityNumber?: string;
+  obesityNumber?: string | null;
 
   @Column({
     name: 'user_id',

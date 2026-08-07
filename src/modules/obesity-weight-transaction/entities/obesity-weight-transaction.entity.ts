@@ -6,6 +6,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 import { ObesityRegister } from '../../obesity-register/entities/obesity-register.entity';
@@ -20,12 +21,19 @@ import { ObesityRegister } from '../../obesity-register/entities/obesity-registe
   ['patientId'],
 )
 @Index(
+  'idx_obesity_weight_transaction_hn',
+  ['hn'],
+)
+@Index(
   'idx_obesity_weight_transaction_weight_at',
   ['weightAt'],
 )
 @Index(
-  'idx_obesity_weight_transaction_register_weight_at',
+  'uk_obesity_weight_transaction_register_weight_at',
   ['registerId', 'weightAt'],
+  {
+    unique: true,
+  },
 )
 export class ObesityWeightTransaction {
   @PrimaryGeneratedColumn({
@@ -63,11 +71,19 @@ export class ObesityWeightTransaction {
   })
   patientId!: string;
 
+    @Column({
+    name: 'hn',
+    type: 'varchar',
+    length: 20,
+  })
+  hn!: string;
+
   @Column({
     name: 'episode_id',
     type: 'bigint',
+      nullable: true,
   })
-  episodeId!: string;
+  episodeId?: string;
 
   @Column({
     name: 'vn',
@@ -120,6 +136,10 @@ export class ObesityWeightTransaction {
   })
   createdAt?: Date;
 
-
+  @UpdateDateColumn({
+  name: 'updated_at',
+  nullable: true,
+})
+  updatedAt?: Date;
 
 }
