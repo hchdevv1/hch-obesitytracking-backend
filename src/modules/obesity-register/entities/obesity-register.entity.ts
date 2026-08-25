@@ -3,11 +3,13 @@ import {
   CreateDateColumn,
   Entity,
   Index,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-  OneToMany
 } from 'typeorm';
+
 import { ObesityWeightTransaction } from '../../obesity-weight-transaction/entities/obesity-weight-transaction.entity';
+
 @Entity({
   name: 'obesity_register',
 })
@@ -99,6 +101,12 @@ export class ObesityRegister {
     scale: 2,
   })
   baselineBmi?: number;
+  @Column({
+  name: 'baseline_date',
+  type: 'date',
+  nullable: true,
+})
+baselineDate?: Date;
 
   @Column({
     name: 'surgery_status',
@@ -115,6 +123,56 @@ export class ObesityRegister {
   })
   surgeryApprovedAt?: Date;
 
+  @Column({
+    name: 'is_cancelled',
+    type: 'boolean',
+    default: false,
+  })
+  isCancelled?: boolean;
+
+  @Column({
+    name: 'is_preauthorized',
+    type: 'boolean',
+    default: false,
+  })
+  isPreauthorized?: boolean;
+
+  @Column({
+    name: 'is_operation_scheduled',
+    type: 'boolean',
+    default: false,
+  })
+  isOperationScheduled?: boolean;
+
+  @Column({
+    name: 'is_baseline_accepted',
+    type: 'boolean',
+    default: false,
+  })
+  isBaselineAccepted?: boolean;
+
+  @Column({
+  name: 'is_success',
+  type: 'boolean',
+  default: false,
+})
+isSuccess?: boolean;
+
+@Column({
+  name: 'success_date',
+  type: 'timestamptz',
+  nullable: true,
+})
+successDate?: Date;
+
+@Column({
+  name: 'is_request_preauthorized',
+  type: 'boolean',
+  default: false,
+})
+isRequestPreauthorized?: boolean;
+
+
   @CreateDateColumn({
     name: 'created_at',
     type: 'timestamptz',
@@ -126,9 +184,10 @@ export class ObesityRegister {
     type: 'timestamptz',
   })
   updatedAt!: Date;
+
   @OneToMany(
-  () => ObesityWeightTransaction,
-  (weightTransaction) => weightTransaction.register,
-)
-weightTransactions!: ObesityWeightTransaction[];
+    () => ObesityWeightTransaction,
+    (weightTransaction) => weightTransaction.register,
+  )
+  weightTransactions!: ObesityWeightTransaction[];
 }

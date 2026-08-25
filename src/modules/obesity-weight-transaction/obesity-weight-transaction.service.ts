@@ -23,7 +23,7 @@ import { GoalDto } from './dto/goal.dto';
 import { WeightHistorySort } from './enums/weight-history-sort.enum';
 import { WeightHistoryItemDto } from './dto/weight-history-item.dto';
 import { ChartDto } from './dto/chart.dto';
-
+import { HisPatientsObservationsResponse } from '../his/interfaces/his-patients-observations-response.interface';
 
 
 @Injectable()
@@ -36,7 +36,7 @@ export class ObesityWeightTransactionService {
     private readonly obesityRegisterRepository: Repository<ObesityRegister>,
   ) {}
 
-  async create(
+  /*async create(
     request: CreateWeightTransactionDto,
   ): Promise<WeightTransactionResponseDto> {
     const register = await this.validateRegister(
@@ -88,8 +88,117 @@ export class ObesityWeightTransactionService {
       request,
       action,
     );
+  } */
+async create(
+  request: CreateWeightTransactionDto,
+): Promise<WeightTransactionResponseDto> {
+  const register = await this.validateRegister(
+    request.registerId,
+    request.userId,
+  );
+
+  const height = Number(register.baselineHeight);
+  const weight = Number(request.weight);
+
+  const bmi = this.calculateBmi(
+    height,
+    weight,
+  );
+
+  const existingTransaction =
+    await this.findExistingTransaction(
+      request.registerId,
+      request.weightAt,
+    );
+
+  let transaction: ObesityWeightTransaction;
+  let action: WeightTransactionAction;
+
+  if (existingTransaction) {
+    transaction =
+      await this.updateTransaction(
+        existingTransaction,
+        height,
+        weight,
+        bmi,
+      );
+
+    action = WeightTransactionAction.UPDATE;
+  } else {
+    transaction =
+      await this.insertTransaction(
+        request,
+        height,
+        weight,
+        bmi,
+      );
+
+    action = WeightTransactionAction.INSERT;
   }
-async getHistory(
+
+  // Check Success ≥ 5%
+  await this.updateSuccessStatus(
+    register,
+    transaction,
+  );
+
+  return this.buildResponse(
+    transaction,
+    request,
+    action,
+  );
+}
+private async updateSuccessStatus(
+  register: ObesityRegister,
+  transaction: ObesityWeightTransaction,
+): Promise<void> {
+  // ถ้า Success ไปแล้ว ไม่ต้องเปลี่ยน successDate
+  if (register.isSuccess) {
+    return;
+  }
+
+  const baselineWeight = Number(
+    register.baselineWeight,
+  );
+
+  const currentWeight = Number(
+    transaction.weight,
+  );
+
+  // Validate weight
+  if (
+    !Number.isFinite(baselineWeight) ||
+    baselineWeight <= 0 ||
+    !Number.isFinite(currentWeight)
+  ) {
+    return;
+  }
+
+  // Calculate weight loss percentage
+  const weightLossPercent =
+    ((baselineWeight - currentWeight) /
+      baselineWeight) *
+    100;
+
+  // ยังลดน้ำหนักไม่ถึง 5%
+  if (weightLossPercent < 5) {
+    return;
+  }
+
+  // ต้องมีวันที่ของ transaction
+  if (!transaction.weightAt) {
+    return;
+  }
+
+  // Success ครั้งแรก
+  register.isSuccess = true;
+  register.successDate = transaction.weightAt;
+
+  await this.obesityRegisterRepository.save(
+    register,
+  );
+}
+    async getHistory(
   request: WeightHistoryRequestDto,
 ): Promise<WeightHistoryResponseDto> {
   // Step 1 : Validate Register
@@ -540,5 +649,49 @@ private buildChart(range: {
       tickInterval: range.tickInterval,
     },
   };
+}
+async importFromHis(
+  register: ObesityRegister,
+  observations:
+    HisPatientsObservationsResponse['ObservationInfo'],
+): Promise<void> {
+  if (
+    !observations ||
+    observations.length === 0
+  ) {
+    return;
+  }
+
+  const transactions =
+    observations.map((observation) => {
+      return this.obesityWeightTransactionRepository.create({
+        registerId: register.registerId,
+
+        patientId: observation.PatientID,
+
+        hn: observation.HN,
+
+        episodeId:
+          observation.EpisodeID ?? undefined,
+
+        vn: observation.VN || undefined,
+
+        height: Number(observation.Height),
+
+        weight: Number(observation.Weight),
+
+        bmi: Number(observation.BMI),
+
+        weightAt: new Date(
+          `${observation.VisitDate}T00:00:00`,
+        ),
+
+        isWeightAtHospital: true,
+      });
+    });
+
+  await this.obesityWeightTransactionRepository.save(
+    transactions,
+  );
 }
 }

@@ -8,6 +8,9 @@ import { HealthModule } from './modules/health/health.module';
 import { ObesityRegisterModule } from './modules/obesity-register/obesity-register.module';
 import { ObesityWeightTransactionModule } from './modules/obesity-weight-transaction/obesity-weight-transaction.module';
 import { HisModule } from './modules/his/his.module';
+import { AdminService } from './modules/admin/admin.service';
+import { AdminModule } from './modules/admin/admin.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -56,6 +59,8 @@ import { HisModule } from './modules/his/his.module';
     ObesityRegisterModule,
     ObesityWeightTransactionModule,
     HisModule,
+    AdminModule,
   ],
+  providers: [AdminService],
 })
 export class AppModule {}

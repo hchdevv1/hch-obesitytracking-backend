@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
+
 import { HttpService } from '@nestjs/axios';
 import {
   Injectable,
@@ -13,6 +14,8 @@ import { firstValueFrom } from 'rxjs';
 
 import { HisRegisterPatientRequest } from './interfaces/his-register-patient-request.interface';
 import { HisRegisterPatientResponse } from './interfaces/his-register-patient-response.interface';
+import { HisPatientsObservationsRequest } from './interfaces/his-patients-observations-request.interface';
+import { HisPatientsObservationsResponse } from './interfaces/his-patients-observations-response.interface';
 
 @Injectable()
 export class HisService {
@@ -21,10 +24,16 @@ export class HisService {
     private readonly configService: ConfigService,
   ) {}
 
+  /**
+   * Get patient information from HIS
+   */
   async registerPatient(
     hn: string,
   ): Promise<HisRegisterPatientResponse> {
-    const baseUrl = this.configService.get<string>('HIS_API_BASE_URL');
+    const baseUrl =
+      this.configService.get<string>(
+        'HIS_API_BASE_URL',
+      );
 
     const payload: HisRegisterPatientRequest = {
       HN: hn,
@@ -42,6 +51,45 @@ export class HisService {
     } catch (error) {
       throw new InternalServerErrorException(
         'Unable to connect to HIS service.',
+      );
+    }
+  }
+
+  /**
+   * Get patient's historical weight observations
+   * from HIS.
+   *
+   * HIS API already filters the data to the
+   * required historical period.
+   */
+  async getPatientsObservations(
+    hn: string,
+  ): Promise<HisPatientsObservationsResponse> {
+    const baseUrl =
+      this.configService.get<string>(
+        'HIS_API_BASE_URL',
+      );
+
+    const payload: HisPatientsObservationsRequest = {
+      Patients: [
+        {
+          HN: hn,
+        },
+      ],
+    };
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post<HisPatientsObservationsResponse>(
+          `${baseUrl}/patientsObservations`,
+          payload,
+        ),
+      );
+
+      return response.data;
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Unable to retrieve patient observations from HIS.',
       );
     }
   }

@@ -25,7 +25,10 @@ import { RegisterStatusResponseDto } from './dto/register-status-response.dto';
 import { SummaryRequestDto } from './dto/summary-request.dto';
 import { SummaryResponseDto } from './dto/summary-response.dto';
 import { NextAppointmentResponseDto } from './dto/next-appointment-response.dto';
-
+import { CancelRegisterRequestDto } from './dto/cancel-register-request.dto';
+import { CancelRegisterResponseDto } from './dto/cancel-register-response.dto';
+import { PreauthorizeRegisterRequestDto } from './dto/preauthorize-register-request.dto';
+import { PreauthorizeRegisterResponseDto } from './dto/preauthorize-register-response.dto';
 @ApiTags('Obesity Register')
 @Controller('register')
 export class ObesityRegisterController {
@@ -104,5 +107,47 @@ async getNextAppointment(
   @Param('hn') hn: string,
 ): Promise<NextAppointmentResponseDto> {
   return this.obesityRegisterService.getNextAppointment(hn);
+}
+@Post('cancel')
+@HttpCode(HttpStatus.OK)
+@ApiOperation({
+  summary: 'Cancel obesity registration',
+  description:
+    'Cancel an existing obesity registration by HN.',
+})
+@ApiBody({
+  type: CancelRegisterRequestDto,
+})
+@ApiBaseResponse(CancelRegisterResponseDto)
+async cancelRegister(
+  @Body() request: CancelRegisterRequestDto,
+): Promise<CancelRegisterResponseDto> {
+  console.log('Cancel Register HN:', request);
+  return this.obesityRegisterService.cancelRegister(
+    request,
+  );
+}
+@Post('preauthorize')
+@HttpCode(HttpStatus.OK)
+@ApiOperation({
+  summary: 'Pre-authorize obesity registration',
+  description:
+    'Pre-authorize an existing obesity registration by HN.',
+})
+@ApiBody({
+  type: PreauthorizeRegisterRequestDto,
+})
+@ApiBaseResponse(PreauthorizeRegisterResponseDto)
+async preauthorizeRegister(
+  @Body() request: PreauthorizeRegisterRequestDto,
+): Promise<PreauthorizeRegisterResponseDto> {
+  console.log(
+    'Pre-authorize Register HN:',
+    request,
+  );
+
+  return this.obesityRegisterService.preAuthorizeRegister(
+    request,
+  );
 }
 }

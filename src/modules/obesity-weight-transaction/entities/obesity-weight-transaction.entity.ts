@@ -136,10 +136,10 @@ export class ObesityWeightTransaction {
   })
   createdAt?: Date;
 
-  @UpdateDateColumn({
+ @UpdateDateColumn({
   name: 'updated_at',
+  type: 'timestamptz',
   nullable: true,
 })
-  updatedAt?: Date;
-
+updatedAt?: Date;
 }
